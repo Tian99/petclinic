@@ -17,9 +17,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
-    outputs:
-      image_uri: ${{ steps.build-image.outputs.image_uri }}
-
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -38,15 +35,20 @@ jobs:
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
       - name: Build Docker image
-        id: build-image
         run: |
           IMAGE_URI="europe-west1-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${GITHUB_SHA}"
-          echo "IMAGE_URI=$IMAGE_URI"
-          echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "$IMAGE_URI" > image_uri.txt
           docker build -t "$IMAGE_URI" .
 
       - name: Push Docker image
-        run: docker push "${{ steps.build-image.outputs.image_uri }}"
+        run: docker push "$(cat image_uri.txt)"
+
+      - name: Upload IMAGE_URI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-uri
+          path: image_uri.txt
+
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,14 +60,21 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Load IMAGE_URI from previous job
+      - name: Download IMAGE_URI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image-uri
+
+      - name: Read IMAGE_URI
         run: |
-          echo "Using image: ${{ needs.build-and-push.outputs.image_uri }}"
+          IMAGE_URI=$(cat image_uri.txt)
+          echo "Deploying image: $IMAGE_URI"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
       - name: Deploy EU Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME_EU \
-            --image "${{ needs.build-and-push.outputs.image_uri }}" \
+            --image "$IMAGE_URI" \
             --region $REGION_EU \
             --platform managed \
             --allow-unauthenticated
@@ -73,7 +82,7 @@ jobs:
       - name: Deploy US Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME_US \
-            --image "${{ needs.build-and-push.outputs.image_uri }}" \
+            --image "$IMAGE_URI" \
             --region $REGION_US \
             --platform managed \
             --allow-unauthenticated
