@@ -59,7 +59,8 @@ deploy:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
     - name: Load IMAGE_URI from previous job
-      run: echo "Using image: ${{ needs.build-and-push.outputs.image_uri }}"
+      run: |
+        echo "Using image: ${{ needs.build-and-push.outputs.image_uri }}"
 
     - name: Deploy EU Cloud Run
       run: |
