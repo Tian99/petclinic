@@ -32,11 +32,25 @@ jobs:
       - name: Build Docker image
         run: docker build -t petclinic .
 
-      - name: Tag image
+      - name: Tag image (SHA + latest)
         run: |
-          IMAGE_URI="europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/petclinic/petclinic:${{ github.sha }}"
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-          docker tag petclinic "$IMAGE_URI"
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          SHA_IMAGE="europe-west1-docker.pkg.dev/$PROJECT_ID/petclinic/petclinic:${{ github.sha }}"
+          LATEST_IMAGE="europe-west1-docker.pkg.dev/$PROJECT_ID/petclinic/petclinic:latest"
 
-      - name: Push image to Artifact Registry
-        run: docker push "$IMAGE_URI"
+          echo "SHA_IMAGE=$SHA_IMAGE" >> $GITHUB_ENV
+          echo "LATEST_IMAGE=$LATEST_IMAGE" >> $GITHUB_ENV
+
+          docker tag petclinic "$SHA_IMAGE"
+          docker tag petclinic "$LATEST_IMAGE"
+
+      - name: Push images to Artifact Registry
+        run: |
+          docker push "$SHA_IMAGE"
+          docker push "$LATEST_IMAGE"
+
+      - name: Set outputs for CD
+        id: output
+        run: |
+          echo "sha_image=$SHA_IMAGE" >> $GITHUB_OUTPUT
+          echo "latest_image=$LATEST_IMAGE" >> $GITHUB_OUTPUT
