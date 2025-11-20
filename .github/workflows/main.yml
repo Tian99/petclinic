@@ -43,7 +43,7 @@ jobs:
 
           docker tag petclinic "$SHA_IMAGE"
           docker tag petclinic "$LATEST_IMAGE"
-
+          
       - name: Push images to Artifact Registry
         run: |
           docker push "$SHA_IMAGE"
