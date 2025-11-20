@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy Petclinic to Cloud Run
+name: Build, Push and Deploy Petclinic
 
 on:
   push:
@@ -10,7 +10,6 @@ env:
   REGION_US: us-central1
   REPO_NAME: petclinic
   IMAGE_NAME: petclinic
-  BUCKET_ARTIFACTS: petclinic-ci-artifacts
   SERVICE_NAME_EU: petclinic-eu
   SERVICE_NAME_US: petclinic-us
 
@@ -18,11 +17,14 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    outputs:
+      image_uri: ${{ steps.build-image.outputs.image_uri }}
+
     steps:
-    - name: Checkout code
+    - name: Checkout source code
       uses: actions/checkout@v4
 
-    - name: Authenticate to GCP
+    - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -30,42 +32,39 @@ jobs:
     - name: Setup gcloud
       uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        project_id: ${{ env.PROJECT_ID }}
 
     - name: Configure Docker for Artifact Registry
-      run: |
-        gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+      run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
     - name: Build Docker image
+      id: build-image
       run: |
         IMAGE_URI="europe-west1-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${GITHUB_SHA}"
-        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-        docker build -t $IMAGE_URI .
+        echo "IMAGE_URI=$IMAGE_URI"
+        echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+        docker build -t "$IMAGE_URI" .
 
     - name: Push Docker image
-      run: |
-        docker push "$IMAGE_URI"
+      run: docker push "${{ steps.build-image.outputs.image_uri }}"
 
-    - name: Upload latest image tag to GCS
-      run: |
-        echo "$IMAGE_URI" > latest-image.txt
-        gsutil cp latest-image.txt gs://${BUCKET_ARTIFACTS}/latest-image.txt
+deploy:
+  runs-on: ubuntu-latest
+  needs: build-and-push
 
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-
-    steps:
+  steps:
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+    - name: Load IMAGE_URI from previous job
+      run: echo "Using image: ${{ needs.build-and-push.outputs.image_uri }}"
+
     - name: Deploy EU Cloud Run
       run: |
         gcloud run deploy $SERVICE_NAME_EU \
-          --image "$IMAGE_URI" \
+          --image "${{ needs.build-and-push.outputs.image_uri }}" \
           --region $REGION_EU \
           --platform managed \
           --allow-unauthenticated
@@ -73,7 +72,7 @@ jobs:
     - name: Deploy US Cloud Run
       run: |
         gcloud run deploy $SERVICE_NAME_US \
-          --image "$IMAGE_URI" \
+          --image "${{ needs.build-and-push.outputs.image_uri }}" \
           --region $REGION_US \
           --platform managed \
           --allow-unauthenticated
