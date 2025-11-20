@@ -10,7 +10,7 @@ env:
   REGION_US: us-central1
   REPO_NAME: petclinic
   IMAGE_NAME: petclinic
-  BUCKET_ARTIFACTS: petclinic-cd
+  BUCKET_ARTIFACTS: petclinic-ci-artifacts
   SERVICE_NAME_EU: petclinic-eu
   SERVICE_NAME_US: petclinic-us
 
