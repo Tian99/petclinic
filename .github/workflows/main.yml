@@ -1,0 +1,48 @@
+name: CI - Build and Push Petclinic Image
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - staging
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout source
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Auth to GCP using Service Account Key in GitHub Secret
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      # 3. Configure Docker client to use gcloud auth
+      - name: Configure Docker to use gcloud
+        run: |
+          gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+
+      # 4. Build Docker image using your Dockerfile
+      - name: Build Docker image
+        run: |
+          docker build -t petclinic .
+
+      # 5. Tag Docker image with Git commit SHA
+        # example: europe-west1-docker.pkg.dev/petclinic-478815/petclinic/petclinic:abc123
+      - name: Tag image with commit SHA
+        run: |
+          IMAGE_URI="europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/petclinic/petclinic:${{ github.sha }}"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          docker tag petclinic $IMAGE_URI
+
+      # 6. Push image to Artifact Registry
+      - name: Push image
+        run: |
+          docker push "$IMAGE_URI"
