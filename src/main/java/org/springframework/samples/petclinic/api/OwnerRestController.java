@@ -20,4 +20,5 @@ public class OwnerRestController {
 	public List<OwnerSummaryDto> findAllSummaries() {
 		return ownerReadService.getAllSummaries();
 	}
+
 }

@@ -21,4 +21,5 @@ public class OwnerReadService {
 	public List<OwnerSummaryDto> getAllSummaries() {
 		return ownerRepository.findAllSummaries();
 	}
+
 }
