@@ -68,9 +68,11 @@ jobs:
       - name: Read IMAGE_URI
         run: |
           IMAGE_URI=$(cat image_uri.txt)
-          echo "Deploying image: $IMAGE_URI"
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
+      # --------------------
+      # Deploy to EU
+      # --------------------
       - name: Deploy EU Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME_EU \
@@ -78,8 +80,15 @@ jobs:
             --region $REGION_EU \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars=SPRING_PROFILES_ACTIVE=eu
+            --set-env-vars SPRING_PROFILES_ACTIVE=eu \
+            --set-env-vars DB_HOST=${{ secrets.DB_HOST_EU }} \
+            --set-env-vars DB_USER=${{ secrets.DB_USER }} \
+            --set-env-vars DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --set-env-vars DB_NAME=${{ secrets.DB_NAME }}
 
+      # --------------------
+      # Deploy to US
+      # --------------------
       - name: Deploy US Cloud Run
         run: |
           gcloud run deploy $SERVICE_NAME_US \
@@ -87,4 +96,8 @@ jobs:
             --region $REGION_US \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars=SPRING_PROFILES_ACTIVE=us
+            --set-env-vars SPRING_PROFILES_ACTIVE=us \
+            --set-env-vars DB_HOST=${{ secrets.DB_HOST_US }} \
+            --set-env-vars DB_USER=${{ secrets.DB_USER }} \
+            --set-env-vars DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --set-env-vars DB_NAME=${{ secrets.DB_NAME }}
