@@ -25,10 +25,11 @@ public interface OwnerRepository extends JpaRepository<Owner, Integer> {
 	Optional<Owner> findById(Integer id);
 
 	@Query("""
-        select new org.springframework.samples.petclinic.api.OwnerSummaryDto(
-            o.id, o.firstName, o.lastName, o.city
-        )
-        from Owner o
-        """)
+			select new org.springframework.samples.petclinic.api.OwnerSummaryDto(
+			    o.id, o.firstName, o.lastName, o.city
+			)
+			from Owner o
+			""")
 	List<OwnerSummaryDto> findAllSummaries();
+
 }
