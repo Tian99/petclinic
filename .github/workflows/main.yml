@@ -78,7 +78,7 @@ jobs:
             --region $REGION_EU \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars SPRING_PROFILES_ACTIVE=eu
+            --set-env-vars=SPRING_PROFILES_ACTIVE=eu
 
       - name: Deploy US Cloud Run
         run: |
@@ -87,4 +87,4 @@ jobs:
             --region $REGION_US \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars SPRING_PROFILES_ACTIVE=us
+            --set-env-vars=SPRING_PROFILES_ACTIVE=us
