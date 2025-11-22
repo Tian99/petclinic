@@ -12,6 +12,7 @@ env:
   IMAGE_NAME: petclinic
   SERVICE_NAME_EU: petclinic-eu
   SERVICE_NAME_US: petclinic-us
+  ARTIFACT_BUCKET: petclinic-ci-artifacts
 
 jobs:
   build-and-push:
@@ -69,6 +70,9 @@ jobs:
         run: |
           IMAGE_URI=$(cat image_uri.txt)
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+      - name: Upload latest image URI to GCS
+        run: |
+          gsutil cp image_uri.txt gs://${{ env.ARTIFACT_BUCKET }}/latest-image.txt
 
       # --------------------
       # Deploy to EU
