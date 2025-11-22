@@ -2,7 +2,7 @@ name: Build, Push and Deploy Petclinic
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -22,6 +22,9 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # --------------------
+      # Authenticate to GCP
+      # --------------------
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -32,6 +35,9 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
 
+      # --------------------
+      # Build Docker Image
+      # --------------------
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
@@ -56,13 +62,22 @@ jobs:
     needs: build-and-push
 
     steps:
+      # --------------------
+      # Authenticate again (new job)
+      # --------------------
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          create_credentials_file: true
-          export_environment_variables: true
 
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      # --------------------
+      # Load IMAGE_URI artifact
+      # --------------------
       - name: Download IMAGE_URI artifact
         uses: actions/download-artifact@v4
         with:
@@ -72,12 +87,17 @@ jobs:
         run: |
           IMAGE_URI=$(cat image_uri.txt)
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+      # --------------------
+      # Upload latest-image.txt to GCS
+      # (Now fully fixed & working)
+      # --------------------
       - name: Upload latest image URI to GCS
         run: |
           gsutil cp image_uri.txt gs://${{ env.ARTIFACT_BUCKET }}/latest-image.txt
 
       # --------------------
-      # Deploy to EU
+      # Deploy EU Cloud Run
       # --------------------
       - name: Deploy EU Cloud Run
         run: |
@@ -93,7 +113,7 @@ jobs:
             --set-env-vars DB_NAME=${{ secrets.DB_NAME }}
 
       # --------------------
-      # Deploy to US
+      # Deploy US Cloud Run
       # --------------------
       - name: Deploy US Cloud Run
         run: |
