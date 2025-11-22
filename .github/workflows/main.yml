@@ -61,6 +61,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
           token_format: "access_token"
+          export_environment_variables: true
 
       - name: Download IMAGE_URI artifact
         uses: actions/download-artifact@v4
