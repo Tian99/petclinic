@@ -60,6 +60,7 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          token_format: "access_token"
 
       - name: Download IMAGE_URI artifact
         uses: actions/download-artifact@v4
