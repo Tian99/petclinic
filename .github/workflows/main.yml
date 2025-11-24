@@ -99,7 +99,7 @@ jobs:
             --project $PROJECT_ID
 
       - name: Apply EU SecretProviderClass
-        run: kubectl apply -f k8s/spc-eu.yaml
+        run: kubectl apply -f k8s/secretproviderclass-eu.yaml
 
       - name: Deploy EU
         run: |
@@ -117,7 +117,7 @@ jobs:
             --project $PROJECT_ID
 
       - name: Apply US SecretProviderClass
-        run: kubectl apply -f k8s/spc-us.yaml
+        run: kubectl apply -f k8s/secretproviderclass-us.yaml
 
       - name: Deploy US
         run: |
