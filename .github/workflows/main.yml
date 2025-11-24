@@ -104,6 +104,7 @@ jobs:
         run: |
           kubectl apply -f k8s/deployment-eu.yaml
           kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
+          kubectl rollout restart deploy/petclinic
 
       - name: Apply EU HPA
         run: kubectl apply -f k8s/hpa-eu.yaml
@@ -125,6 +126,7 @@ jobs:
         run: |
           kubectl apply -f k8s/deployment-us.yaml
           kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
+          kubectl rollout restart deploy/petclinic
 
       - name: Apply US HPA
         run: kubectl apply -f k8s/hpa-us.yaml
