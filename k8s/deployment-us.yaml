@@ -49,4 +49,4 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: "petclinic-secrets"
+              secretProviderClass: "petclinic-secrets-us"
