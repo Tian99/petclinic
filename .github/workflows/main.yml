@@ -101,10 +101,13 @@ jobs:
       - name: Apply EU SecretProviderClass
         run: kubectl apply -f k8s/secretproviderclass-eu.yaml
 
-      - name: Deploy EU
+      - name: Deploy EU workload
         run: |
           kubectl apply -f k8s/deployment-eu.yaml
           kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
+
+      - name: Apply EU HPA
+        run: kubectl apply -f k8s/hpa-eu.yaml
 
       #################################
       # US Cluster Deployment
@@ -119,7 +122,10 @@ jobs:
       - name: Apply US SecretProviderClass
         run: kubectl apply -f k8s/secretproviderclass-us.yaml
 
-      - name: Deploy US
+      - name: Deploy US workload
         run: |
           kubectl apply -f k8s/deployment-us.yaml
           kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
+
+      - name: Apply US HPA
+        run: kubectl apply -f k8s/hpa-us.yaml
