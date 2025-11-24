@@ -14,8 +14,6 @@ spec:
       labels:
         app: petclinic
     spec:
-
-      # 必须使用与你之前创建 Workload Identity 对应的 KSA
       serviceAccountName: petclinic-app
 
       containers:
@@ -24,25 +22,39 @@ spec:
           ports:
             - containerPort: 8080
 
-          # 挂载的 secret 文件路径（每个是一个文件）
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "us"
-            - name: DB_HOST_FILE
-              value: "/secrets/host"
-            - name: DB_USER_FILE
-              value: "/secrets/user"
-            - name: DB_PASSWORD_FILE
-              value: "/secrets/password"
-            - name: DB_NAME_FILE
-              value: "/secrets/dbname"
+
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: petclinic-db-secrets-us
+                  key: DB_HOST
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: petclinic-db-secrets-us
+                  key: DB_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: petclinic-db-secrets-us
+                  key: DB_PASSWORD
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: petclinic-db-secrets-us
+                  key: DB_NAME
 
           volumeMounts:
             - name: db-secrets
               mountPath: "/secrets"
               readOnly: true
 
-      # 使用 Secret Manager CSI Driver
       volumes:
         - name: db-secrets
           csi:
