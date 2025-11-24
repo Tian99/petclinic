@@ -68,11 +68,10 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
           install_components: gke-gcloud-auth-plugin
-
       - name: Enable GKE auth plugin
         run: |
-          echo "export USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
-          echo "export KUBECONFIG=/home/runner/.kube/config" >> $GITHUB_ENV
+          echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
+          echo "KUBECONFIG=/home/runner/.kube/config" >> $GITHUB_ENV
 
       - name: Download IMAGE_URI
         uses: actions/download-artifact@v4
