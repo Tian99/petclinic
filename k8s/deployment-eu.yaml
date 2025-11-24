@@ -16,7 +16,6 @@ spec:
     spec:
       containers:
         - name: petclinic-container
-          image: REPLACED_BY_CI
           ports:
             - containerPort: 8080
           env:
