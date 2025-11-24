@@ -10,7 +10,7 @@ env:
   REGION_US: us-central1
   REPO_NAME: petclinic
   IMAGE_NAME: petclinic
-  ARTIFACT_BUCKET: petclinic-ci-artifacts
+  ARTIFACT_BUCKET: petclinic-ci-artifacts-${{ secrets.GCP_PROJECT_ID }}
   CLUSTER_EU: petclinic-eu
   CLUSTER_US: petclinic-us
 
