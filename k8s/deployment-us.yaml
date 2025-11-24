@@ -24,31 +24,19 @@ spec:
 
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: "us"
+              value: "eu"
 
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db-secrets-us
-                  key: DB_HOST
+            - name: DB_HOST_FILE
+              value: "/secrets/host"
 
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db-secrets-us
-                  key: DB_USER
+            - name: DB_USER_FILE
+              value: "/secrets/user"
 
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db-secrets-us
-                  key: DB_PASSWORD
+            - name: DB_PASSWORD_FILE
+              value: "/secrets/password"
 
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db-secrets-us
-                  key: DB_NAME
+            - name: DB_NAME_FILE
+              value: "/secrets/dbname"
 
           volumeMounts:
             - name: db-secrets
@@ -61,4 +49,4 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: "petclinic-secrets-us"
+              secretProviderClass: "petclinic-secrets-eu"
