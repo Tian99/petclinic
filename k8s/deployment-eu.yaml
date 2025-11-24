@@ -14,31 +14,38 @@ spec:
       labels:
         app: petclinic
     spec:
+
+      # 必须指定 SA 才能访问 Secret Manager
+      serviceAccountName: petclinic-app
+
       containers:
         - name: petclinic-container
           image: nginx
           ports:
             - containerPort: 8080
+
+          # 使用 CSI 挂载的文件
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "eu"
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db
-                  key: host
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db
-                  key: user
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db
-                  key: password
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: petclinic-db
-                  key: name
+            - name: DB_HOST_FILE
+              value: "/secrets/host"
+            - name: DB_USER_FILE
+              value: "/secrets/user"
+            - name: DB_PASSWORD_FILE
+              value: "/secrets/password"
+            - name: DB_NAME_FILE
+              value: "/secrets/dbname"
+
+          volumeMounts:
+            - name: db-secrets
+              mountPath: "/secrets"
+              readOnly: true
+
+      volumes:
+        - name: db-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "petclinic-secrets"
