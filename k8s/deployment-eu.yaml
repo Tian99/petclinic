@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
         - name: petclinic-container
+          image: nginx
           ports:
             - containerPort: 8080
           env:
