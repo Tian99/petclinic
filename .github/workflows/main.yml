@@ -1,4 +1,4 @@
-name: Build, Push and Deploy Petclinic (GKE Multi-Cluster)
+name: Build, Push and Deploy Petclinic (GKE Multi-Cluster + Secret Manager)
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
@@ -35,13 +35,13 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
-      - name: Build Docker image
+      - name: Build image
         run: |
           IMAGE_URI="europe-west1-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${GITHUB_SHA}"
           echo "$IMAGE_URI" > image_uri.txt
           docker build -t "$IMAGE_URI" .
 
-      - name: Push Docker image
+      - name: Push image
         run: docker push "$(cat image_uri.txt)"
 
       - name: Upload IMAGE_URI artifact
@@ -50,13 +50,12 @@ jobs:
           name: image-uri
           path: image_uri.txt
 
-
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-push
 
     steps:
-      - name: Checkout source code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
@@ -75,7 +74,7 @@ jobs:
           echo "export USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
           echo "export KUBECONFIG=/home/runner/.kube/config" >> $GITHUB_ENV
 
-      - name: Download IMAGE_URI artifact
+      - name: Download IMAGE_URI
         uses: actions/download-artifact@v4
         with:
           name: image-uri
@@ -85,31 +84,42 @@ jobs:
           IMAGE_URI=$(cat image_uri.txt)
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
-      # Upload image to GCS (optional)
-      - name: Upload latest image URI to GCS
+      - name: Upload latest image to GCS
         run: |
           gsutil cp image_uri.txt gs://${{ env.ARTIFACT_BUCKET }}/latest-image.txt
 
-      # Deploy EU cluster
-      - name: Set EU cluster credentials
+      #################################
+      # EU Cluster Deployment
+      #################################
+
+      - name: Configure EU cluster
         run: |
           gcloud container clusters get-credentials $CLUSTER_EU \
             --region $REGION_EU \
             --project $PROJECT_ID
 
-      - name: Apply EU deployment
+      - name: Apply EU SecretProviderClass
+        run: kubectl apply -f k8s/spc-eu.yaml
+
+      - name: Deploy EU
         run: |
           kubectl apply -f k8s/deployment-eu.yaml
           kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
 
-      # Deploy US cluster
-      - name: Set US cluster credentials
+      #################################
+      # US Cluster Deployment
+      #################################
+
+      - name: Configure US cluster
         run: |
           gcloud container clusters get-credentials $CLUSTER_US \
             --region $REGION_US \
             --project $PROJECT_ID
 
-      - name: Apply US deployment
+      - name: Apply US SecretProviderClass
+        run: kubectl apply -f k8s/spc-us.yaml
+
+      - name: Deploy US
         run: |
           kubectl apply -f k8s/deployment-us.yaml
           kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
