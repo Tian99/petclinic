@@ -17,10 +17,15 @@ spec:
         - host: petclinic.oju.app
           http:
             paths:
-              - path: /
+              - path: /.well-known/acme-challenge/*
+                backend:
+                  serviceName: petclinic-mcs
+                  servicePort: 80
+              - path: /*
                 backend:
                   serviceName: petclinic-mcs
                   servicePort: 80
       backend:
         serviceName: petclinic-mcs
         servicePort: 80
+
