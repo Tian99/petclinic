@@ -1,4 +1,4 @@
-name: Build, Push and Deploy Petclinic (GKE Multi-Cluster + Secret Manager)
+name: Build, Push and Deploy Petclinic (GKE Multi-Cluster + cert-manager)
 
 on:
   push:
@@ -89,9 +89,29 @@ jobs:
           gsutil cp image_uri.txt gs://${{ env.ARTIFACT_BUCKET }}/latest-image.txt
 
       #################################
-      # EU Cluster Deployment
+      # CONFIG CLUSTER (EU) - MCS + MCI + CERT-MANAGER
       #################################
-      - name: Configure EU cluster
+      - name: Configure EU cluster (config cluster)
+        run: |
+          gcloud container clusters get-credentials $CLUSTER_EU \
+            --region $REGION_EU \
+            --project $PROJECT_ID
+
+      - name: Install cert-manager CRDs (config cluster)
+        run: |
+          kubectl apply -f k8s/issuer.yaml
+          kubectl apply -f k8s/certificate.yaml
+
+      - name: Apply MultiClusterService (config cluster)
+        run: kubectl apply -f k8s/mcs.yaml
+
+      - name: Apply MultiClusterIngress (config cluster)
+        run: kubectl apply -f k8s/mci.yaml
+
+      #################################
+      # WORKLOAD CLUSTER - EU
+      #################################
+      - name: Configure EU workload cluster
         run: |
           gcloud container clusters get-credentials $CLUSTER_EU \
             --region $REGION_EU \
@@ -111,21 +131,12 @@ jobs:
 
       - name: Apply EU HPA
         run: kubectl apply -f k8s/hpa-eu.yaml
-      
-      - name: Apply MultiClusterService (config cluster)
-        run: kubectl apply -f k8s/mcs.yaml
 
-      - name: Apply ManagedCertificate (Config Cluster)
-        run: kubectl apply -f k8s/managed-cert.yaml
-
-      - name: Apply MultiClusterIngress (config cluster)
-        run: kubectl apply -f k8s/mci.yaml
-    
 
       #################################
-      # US Cluster Deployment
+      # WORKLOAD CLUSTER - US
       #################################
-      - name: Configure US cluster
+      - name: Configure US workload cluster
         run: |
           gcloud container clusters get-credentials $CLUSTER_US \
             --region $REGION_US \
@@ -145,4 +156,3 @@ jobs:
 
       - name: Apply US HPA
         run: kubectl apply -f k8s/hpa-us.yaml
-
