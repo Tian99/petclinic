@@ -115,6 +115,9 @@ jobs:
       - name: Apply MultiClusterService (config cluster)
         run: kubectl apply -f k8s/mcs.yaml
 
+      - name: Apply ManagedCertificate (Config Cluster)
+        run: kubectl apply -f k8s/managed-cert.yaml
+
       - name: Apply MultiClusterIngress (config cluster)
         run: kubectl apply -f k8s/mci.yaml
     
