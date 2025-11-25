@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: petclinic-cert
+spec:
+  domains:
+    - petclinic.oju.app

@@ -5,6 +5,7 @@ metadata:
   namespace: default
   annotations:
     networking.gke.io/global-static-ip-name: "petclinic-mci-ip"
+    networking.gke.io/managed-certificates: "petclinic-cert"
 spec:
   template:
     spec:
