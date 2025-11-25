@@ -3,11 +3,10 @@ kind: MultiClusterIngress
 metadata:
   name: petclinic-ingress
   namespace: default
-  annotations:
-    networking.gke.io/static-ip: "petclinic-mci-ip"  # 不要填 IP，要填名称
 spec:
   template:
     spec:
       backend:
         serviceName: petclinic-mcs
         servicePort: 80
+  vip: "34.120.243.59"
