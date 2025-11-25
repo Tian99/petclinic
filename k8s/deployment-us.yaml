@@ -24,7 +24,7 @@ spec:
 
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: "eu"
+              value: "us"
 
             - name: DB_HOST_FILE
               value: "/secrets/host"
