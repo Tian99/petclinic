@@ -8,18 +8,23 @@ metadata:
 spec:
   template:
     spec:
-      tls:
-        - hosts:
-            - petclinic.oju.app
-          secretName: petclinic-tls   # cert-manager 自动生成
       rules:
         - host: petclinic.oju.app
           http:
             paths:
-              - path: /*
+              - path: /.well-known/acme-challenge/
+                pathType: Prefix
+                backend:
+                  serviceName: cm-acme-http-solver
+                  servicePort: 8089
+
+              - path: /
+                pathType: Prefix
                 backend:
                   serviceName: petclinic-mcs
                   servicePort: 80
-      backend:
-        serviceName: petclinic-mcs
-        servicePort: 80
+
+      tls:
+        - hosts:
+            - petclinic.oju.app
+          secretName: petclinic-tls
