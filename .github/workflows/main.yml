@@ -111,6 +111,12 @@ jobs:
 
       - name: Apply EU HPA
         run: kubectl apply -f k8s/hpa-eu.yaml
+      
+      - name: Apply MultiClusterService (config cluster)
+        run: kubectl apply -f k8s/mcs.yaml
+
+      - name: Apply MultiClusterIngress (config cluster)
+        run: kubectl apply -f k8s/mci.yaml
 
       #################################
       # US Cluster Deployment
