@@ -68,6 +68,7 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
           install_components: gke-gcloud-auth-plugin
+
       - name: Enable GKE auth plugin
         run: |
           echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
@@ -90,7 +91,6 @@ jobs:
       #################################
       # EU Cluster Deployment
       #################################
-
       - name: Configure EU cluster
         run: |
           gcloud container clusters get-credentials $CLUSTER_EU \
@@ -100,10 +100,13 @@ jobs:
       - name: Apply EU SecretProviderClass
         run: kubectl apply -f k8s/secretproviderclass-eu.yaml
 
+      - name: Apply EU Service
+        run: kubectl apply -f k8s/service.yaml
+
       - name: Deploy EU workload
         run: |
           kubectl apply -f k8s/deployment-eu.yaml
-          kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
+          kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI
           kubectl rollout restart deploy/petclinic
 
       - name: Apply EU HPA
@@ -112,7 +115,6 @@ jobs:
       #################################
       # US Cluster Deployment
       #################################
-
       - name: Configure US cluster
         run: |
           gcloud container clusters get-credentials $CLUSTER_US \
@@ -122,10 +124,13 @@ jobs:
       - name: Apply US SecretProviderClass
         run: kubectl apply -f k8s/secretproviderclass-us.yaml
 
+      - name: Apply US Service
+        run: kubectl apply -f k8s/service.yaml
+
       - name: Deploy US workload
         run: |
           kubectl apply -f k8s/deployment-us.yaml
-          kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI --namespace default
+          kubectl set image deployment/petclinic petclinic-container=$IMAGE_URI
           kubectl rollout restart deploy/petclinic
 
       - name: Apply US HPA
