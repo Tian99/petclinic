@@ -13,13 +13,11 @@ spec:
           http:
             paths:
               - path: /.well-known/acme-challenge/
-                pathType: Prefix
                 backend:
-                  serviceName: cm-acme-http-solver
+                  serviceName: cm-acme-http-solver-8tk8x
                   servicePort: 8089
 
               - path: /
-                pathType: Prefix
                 backend:
                   serviceName: petclinic-mcs
                   servicePort: 80
