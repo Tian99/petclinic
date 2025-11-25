@@ -117,9 +117,7 @@ jobs:
 
       - name: Apply MultiClusterIngress (config cluster)
         run: kubectl apply -f k8s/mci.yaml
-        
-      - name: Apply EU ServiceExport
-        run: kubectl apply -f k8s/serviceexport.yaml
+    
 
       #################################
       # US Cluster Deployment
@@ -144,5 +142,4 @@ jobs:
 
       - name: Apply US HPA
         run: kubectl apply -f k8s/hpa-us.yaml
-      - name: Apply us ServiceExport
-        run: kubectl apply -f k8s/serviceexport.yaml
+
