@@ -8,6 +8,14 @@ metadata:
 spec:
   template:
     spec:
+      rules:
+        - host: petclinic.oju.app
+          http:
+            paths:
+              - path: /
+                backend:
+                  serviceName: petclinic-mcs
+                  servicePort: 80
       backend:
         serviceName: petclinic-mcs
         servicePort: 80
