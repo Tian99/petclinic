@@ -5,22 +5,17 @@ metadata:
   namespace: default
   annotations:
     networking.gke.io/global-static-ip-name: "petclinic-mci-ip"
-    networking.gke.io/managed-certificates: "petclinic-cert"
 spec:
   template:
     spec:
       tls:
         - hosts:
             - petclinic.oju.app
-          secretName: dummy-secret
+          secretName: petclinic-tls   # cert-manager 自动生成
       rules:
         - host: petclinic.oju.app
           http:
             paths:
-              - path: /.well-known/acme-challenge/*
-                backend:
-                  serviceName: petclinic-mcs
-                  servicePort: 80
               - path: /*
                 backend:
                   serviceName: petclinic-mcs
@@ -28,4 +23,3 @@ spec:
       backend:
         serviceName: petclinic-mcs
         servicePort: 80
-
