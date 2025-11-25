@@ -11,10 +11,17 @@ COPY src ./src
 
 RUN ./gradlew bootJar -x test --no-daemon
 
+# Production image
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+# Copy entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Use entrypoint.sh as single ENTRYPOINT
+ENTRYPOINT ["/entrypoint.sh"]
