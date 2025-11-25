@@ -9,6 +9,10 @@ metadata:
 spec:
   template:
     spec:
+      tls:
+        - hosts:
+            - petclinic.oju.app
+          secretName: dummy-secret
       rules:
         - host: petclinic.oju.app
           http:
