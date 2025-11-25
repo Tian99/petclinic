@@ -1,0 +1,20 @@
+apiVersion: networking.gke.io/v1
+kind: MultiClusterService
+metadata:
+  name: petclinic-mcs
+  namespace: default
+  annotations:
+    networking.gke.io/headless: "true"
+spec:
+  template:
+    spec:
+      selector:
+        app: petclinic
+      ports:
+        - name: http
+          protocol: TCP
+          port: 80
+          targetPort: 8080
+  clusters:
+    - name: petclinic-eu
+    - name: petclinic-us
